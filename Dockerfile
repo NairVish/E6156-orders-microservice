@@ -1,7 +1,11 @@
-FROM python:3.10.0-slim
+FROM tiangolo/uwsgi-nginx-flask:python3.9
 
-WORKDIR /app
-COPY . .
-RUN pip3 install -r requirements.txt
+ENV UWSGI_INI /app/uwsgi.ini
+ENV LISTEN_PORT 5000
 
-CMD ["gunicorn"  , "-b", "0.0.0.0:5000", "application:application"]
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+
+EXPOSE 5000
+
+COPY ./ /app
