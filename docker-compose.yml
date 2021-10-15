@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - "5000:5000"
+    volumes:
+      - ./cors_nginx.conf:/etc/nginx/conf.d/cors_nginx.conf
     environment:
       - DBHOST=host
       - DBUSER=user
