@@ -8,4 +8,5 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 EXPOSE 5000
 
+WORKDIR /app
 COPY ./ /app
