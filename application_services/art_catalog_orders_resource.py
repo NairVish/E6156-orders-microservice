@@ -36,11 +36,11 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
             new_fields.remove("links")
 
         if not user:
-            found_order_result = d_service.fetch_all_records(
+            success, order_result = d_service.fetch_all_records(
                 cls.db_schema, cls.order_record_table, offset, limit, new_fields
             )
         else:  # if user is specified, only find the order information for that user
-            found_order_result = d_service.find_by_template(
+            success, order_result = d_service.find_by_template(
                 cls.db_schema,
                 cls.order_record_table,
                 {"customer_id": user},
@@ -49,30 +49,50 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
                 new_fields,
             )
 
-        if (
-            found_order_result[0] is True
-            and fields is None
-            or (fields is not None and "links" in fields)
-        ):
-            for order in found_order_result[1]:
-                item_ids_in_order = [
-                    item["item_id"]
-                    for item in cls.retrieve_all_items_in_given_order(
-                        order["order_id"], href=True
-                    )[1]
-                ]
-                order["items"] = [
-                    {
-                        "item_id": item_id,
-                        "links": {
-                            "href": f'/orders/{order["order_id"]}/orderitems/{item_id}',
-                            "rel": "order_item",
-                        },
-                    }
-                    for item_id in item_ids_in_order
-                ]
+        if success and fields is None or (fields is not None and "links" in fields):
+            for order in order_result:
+                order["items"] = cls.retrieve_all_items_in_given_order(
+                    order["order_id"], href=True
+                )[1]
 
-        return found_order_result
+        final_result = {
+            "orders": order_result,
+            "links": cls.form_link_section("/orders", fields, limit, offset),
+        }
+        return success, final_result
+
+    @classmethod
+    def form_link_section(cls, endpoint, fields, limit, offset):
+        """
+        Takes a request and adds "next, prev, self" where necessary
+        :return:
+        """
+        marker = "?" if any(item for item in [fields, limit, offset]) else ""
+        fields_str = f"&fields={fields}" if fields else ""
+        limit_str = f"&limit={limit}" if limit else ""
+        offset_str = f"&offset={offset}" if offset else ""
+        offset_calc = int(offset) if offset else 0
+        limit_calc = int(limit) if limit else 0
+        next_offset_str = f"&offset={offset_calc + limit_calc}" if limit else ""
+        prev_offset_str = (
+            f"&offset={offset_calc - limit_calc}"
+            if (offset and limit and (offset_calc - limit_calc >= 0))
+            else ""
+        )
+        return [
+            {
+                "rel": "next",
+                "href": f"{endpoint}{marker}{fields_str}{limit_str}{next_offset_str}",
+            },
+            {
+                "rel": "prev",
+                "href": f"{endpoint}{marker}{fields_str}{limit_str}{prev_offset_str}",
+            },
+            {
+                "rel": "self",
+                "href": f"{endpoint}{marker}{fields_str}{limit_str}{offset_str}",
+            },
+        ]
 
     @classmethod
     def retrieve_single_order(cls, order_id):
@@ -82,9 +102,13 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
 
         if len(found_orders) > 0:
             found_order = found_orders[0]
-            found_order["links"] = cls.retrieve_all_items_in_given_order(
+            found_order["items"] = cls.retrieve_all_items_in_given_order(
                 found_order["order_id"], href=True
             )[1]
+            found_order["links"] = {
+                "href": f"/orders/{order_id}",
+                "rel": "self",
+            }
             return found_order
         else:
             return None
@@ -190,7 +214,19 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
                 return res
 
             all_items_in_order = res[1]
+            [
+                item.update(
+                    {
+                        "links": {
+                            "href": f"/orders/{order_id}/orderitems/{item['item_id']}",
+                            "rel": "order_item",
+                        }
+                    }
+                )
+                for item in all_items_in_order
+            ]
             return True, all_items_in_order
+
         else:
             order_exists = cls._order_exists(order_id)
 
