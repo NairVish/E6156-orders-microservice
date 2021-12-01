@@ -64,8 +64,9 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
     @classmethod
     def form_link_section(cls, endpoint, fields, limit, offset):
         """
-        Takes a request and adds "next, prev, self" where necessary
-        :return:
+        Takes a request and adds "next, prev, self" configured based on the
+        current parameters of the request.
+        :return: List of new links
         """
         marker = "?" if any(item for item in [fields, limit, offset]) else ""
         fields_str = f"&fields={fields}" if fields else ""
