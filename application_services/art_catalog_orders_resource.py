@@ -3,7 +3,7 @@ import database_services.rdb_service as d_service
 
 
 class ArtCatalogOrdersResource(BaseApplicationResource):
-    db_schema = "art_catalog"
+    db_schema = "orders"
     order_record_table = "orders"
     order_contents_table = "order_items"
 
