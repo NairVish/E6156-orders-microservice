@@ -26,7 +26,11 @@ def verify_oauth_token():
     While g is not appropriate for storing data across requests, it provides a global namespace
     for holding any data you want during a single request.
     """
-    return Security.verify_token(request)
+    if request.method != 'OPTIONS':
+        return Security.verify_token(request)
+    else:
+        return None
+
 
 
 @app.route("/")
