@@ -6,6 +6,8 @@ from http import HTTPStatus
 import json
 import logging
 
+from datetime import datetime
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
@@ -48,7 +50,8 @@ def orders():
         res = ArtCatalogOrdersResource.retrieve_all_orders(limit, offset, fields, user)
 
     else:  # request.method == "POST":
-        order_base_info = request.get_json()
+        order_base_info = request.get_json()        
+        order_base_info['datetime_placed'] = datetime.now()
         res = ArtCatalogOrdersResource.add_new_order(order_base_info)
 
     if res[0] is True:
