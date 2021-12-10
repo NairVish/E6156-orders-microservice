@@ -32,20 +32,19 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
         return len(found_orders[1]) > 0 if found_orders[0] is True else False
 
     @classmethod
-    def retrieve_all_orders(cls, limit, offset, fields, user):
+    def retrieve_all_orders(cls, limit, offset, fields):
+        customer_id = find_user_db_id()
         new_fields = fields.split(",") if fields is not None else None
         if new_fields is not None and "links" in new_fields:
             new_fields.remove("links")
 
-        if not user:
-            success, order_result = d_service.fetch_all_records(
-                cls.db_schema, cls.order_record_table, offset, limit, new_fields
-            )
+        if not customer_id:
+            return False, []
         else:  # if user is specified, only find the order information for that user
             success, order_result = d_service.find_by_template(
                 cls.db_schema,
                 cls.order_record_table,
-                {"customer_id": user},
+                {"customer_id": customer_id},
                 offset,
                 limit,
                 new_fields,
