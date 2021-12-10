@@ -11,4 +11,5 @@ services:
       - DBHOST=
       - DBUSER=
       - DBPASSWORD=
+      - USERS_ADDRESSES_URL=
       - FLASK_APP=application

@@ -1,5 +1,7 @@
 from application_services.base_application_resource import BaseApplicationResource
 import database_services.rdb_service as d_service
+from application_services.user_id_resource import find_user_db_id
+from datetime import datetime
 
 
 class ArtCatalogOrdersResource(BaseApplicationResource):
@@ -116,11 +118,25 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
 
     @classmethod
     def add_new_order(cls, order_information):
-        new_record_id = d_service.create_new_record(
-            cls.db_schema, cls.order_record_table, **order_information
+        """
+        Adds a new order record to the database.
+        """
+        customer_id = find_user_db_id()
+        new_record = dict()
+        new_record['customer_id'] = customer_id
+        new_record['datetime_placed'] = datetime.now()
+        new_order_id = d_service.create_new_record(
+            cls.db_schema, cls.order_record_table, new_record
         )
+        if not new_order_id:
+            return False, {"new order record could not be created"}
 
-        return True, {"location": f"/api/orders/{new_record_id}"}
+        for item in order_information.get('items', []):
+            item['order_id'] = new_order_id
+            d_service.create_new_record(
+                cls.db_schema, cls.order_contents_table, item
+            )
+        return True, {"location": f"/api/orders/{new_order_id}"}
 
     @classmethod
     def update_existing_order(cls, order_id, updated_order_information):

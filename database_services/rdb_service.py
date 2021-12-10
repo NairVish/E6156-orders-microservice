@@ -157,19 +157,19 @@ def update_record(db_schema, table_name, conditions, **kwargs):
     return _execute_db_commit_query(sql)
 
 
-def create_new_record(db_schema, table_name, **kwargs):
+def create_new_record(db_schema, table_name, contents):
     """
     Inserts a record into the database generically as a list of key, value arguments.
     :param db_schema: Schema name
     :param table_name: Table name
-    :param kwargs: Dictionary of key, value arguments
+    :param contents: Dictionary of key, value arguments
     :return: Database record created, Throws RDBServiceException() if error occurs
     """
     conn = _get_db_connection()
     cur = conn.cursor()
 
-    columns = [key for key in kwargs.keys()]
-    value_placeholders = ["%s" for _ in kwargs.keys()]
+    columns = [key for key in contents.keys()]
+    value_placeholders = ["%s" for _ in contents.keys()]
     column_specifier = "(" + ", ".join(columns) + ")"
     value_specifier = "(" + ", ".join(value_placeholders) + ")"
     sql = (
@@ -180,7 +180,7 @@ def create_new_record(db_schema, table_name, **kwargs):
     )
 
     try:
-        cur.execute(sql, args=[v for v in kwargs.values()])
+        cur.execute(sql, args=[v for v in contents.values()])
         new_row = cur.lastrowid
         conn.commit()
         return new_row

@@ -34,7 +34,6 @@ def verify_oauth_token():
         return None
 
 
-
 @app.route("/")
 def health_check():
     return "Hello World"
@@ -46,12 +45,10 @@ def orders():
         limit = request.args.get("limit")
         offset = request.args.get("offset")
         fields = request.args.get("fields")
-        user = request.args.get("user")
-        res = ArtCatalogOrdersResource.retrieve_all_orders(limit, offset, fields, user)
+        res = ArtCatalogOrdersResource.retrieve_all_orders(limit, offset, fields)
 
     else:  # request.method == "POST":
-        order_base_info = request.get_json()        
-        order_base_info['datetime_placed'] = datetime.now()
+        order_base_info = request.get_json()
         res = ArtCatalogOrdersResource.add_new_order(order_base_info)
 
     if res[0] is True:
