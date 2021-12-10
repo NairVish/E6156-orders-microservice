@@ -5,6 +5,7 @@ from application_services.art_catalog_orders_resource import ArtCatalogOrdersRes
 from http import HTTPStatus
 import json
 import logging
+from application_services.slack_notifcation import kick_off_slack_notification
 
 from datetime import datetime
 
@@ -32,6 +33,20 @@ def verify_oauth_token():
         return Security.verify_token(request)
     else:
         return None
+
+
+@application.after_request
+def notify_new_order(response):
+    """
+    Method to run before all requests; determines if a user has a valid
+    Google OAuth2 token and uses the token to discover who the user making the request is.
+    The google user and auth token loaded into special flask object called 'g'.
+    While g is not appropriate for storing data across requests, it provides a global namespace
+    for holding any data you want during a single request.
+    """
+    if request.method == 'POST' and request.endpoint == "orders":
+        kick_off_slack_notification("Hurray, a new order has just been placed!")
+    return response
 
 
 @app.route("/")
