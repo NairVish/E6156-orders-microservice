@@ -45,7 +45,8 @@ def orders():
         limit = request.args.get("limit")
         offset = request.args.get("offset")
         fields = request.args.get("fields")
-        res = ArtCatalogOrdersResource.retrieve_all_orders(limit, offset, fields)
+        user = request.args.get("user")
+        res = ArtCatalogOrdersResource.retrieve_all_orders(limit, offset, fields, user)
 
     else:  # request.method == "POST":
         order_base_info = request.get_json()
