@@ -149,14 +149,14 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
         # check if only valid keys are being updated
         if (
             not all(
-                key in ["customer_id", "datetime_placed"]
+                key in ["customer_id", "datetime_placed", "address_id"]
                 for key in updated_order_information.keys()
             )
             or len(updated_order_information) == 0
         ):
             return False
 
-        # quote datetime (if present) | TODO: Does this apply to any other data types?
+        # quote datetime (if present)
         if "datetime_placed" in updated_order_information.keys():
             updated_order_information[
                 "datetime_placed"
