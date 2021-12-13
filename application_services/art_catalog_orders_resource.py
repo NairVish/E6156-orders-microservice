@@ -206,7 +206,7 @@ class ArtCatalogOrdersResource(BaseApplicationResource):
 
         # create new order_item entry, using provided data.
         new_record_id = d_service.create_new_record(
-            cls.db_schema, cls.order_contents_table, **item_order_information
+            cls.db_schema, cls.order_contents_table, item_order_information
         )
 
         return True, {

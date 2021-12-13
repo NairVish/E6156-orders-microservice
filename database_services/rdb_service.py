@@ -169,7 +169,7 @@ def create_new_record(db_schema, table_name, contents):
     cur = conn.cursor()
 
     columns = [key for key in contents.keys()]
-    value_placeholders = ["%s" for _ in contents.keys()]
+    value_placeholders = ["%s" for _ in contents.values()]
     column_specifier = "(" + ", ".join(columns) + ")"
     value_specifier = "(" + ", ".join(value_placeholders) + ")"
     sql = (
